@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0'">
+    <VisualStudioVersion>15.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|arm64">
+      <Configuration>Debug</Configuration>
+      <Platform>arm64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|arm64">
+      <Configuration>Release</Configuration>
+      <Platform>arm64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup>
+    <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
+    <PathToXAMLWinRTImplementations>WinAppSDKApp\</PathToXAMLWinRTImplementations>
+  </PropertyGroup>
+  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
+  <PropertyGroup>
+    <ProjectGuid>589a25f7-1743-485e-ae25-cddedb2ac8b8</ProjectGuid>
+    <TargetPlatformVersion>10.0.22000.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+    <AssetTargetFallback>net6.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <EntryPointProjectUniqueName>..\WinAppSDKApp\WinAppSDKApp.csproj</EntryPointProjectUniqueName>
+  </PropertyGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\SplashScreen.scale-200.png" />
+    <Content Include="Images\LockScreenLogo.scale-200.png" />
+    <Content Include="Images\Square150x150Logo.scale-200.png" />
+    <Content Include="Images\Square44x44Logo.scale-200.png" />
+    <Content Include="Images\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Images\StoreLogo.png" />
+    <Content Include="Images\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WinAppSDKApp\WinAppSDKApp.csproj">
+      <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
+      <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="[1.1.0-preview1]">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="[10.0.22000.194]">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
+  
+  <!-- Begin Overrides -->
+  <!-- Packaging project is causing trouble with parallel builds as it modifies the global properties,
+       used by MSBuild to decide if a project is build already. Overriding it to prevent this from
+       causing build error like: 
+       Error C1083: Cannot open precompiled header file: 'E:\BA\61\i\Release\x64\YourPhone.AppCore.WinRT.AppConfig.Lib\YourPhone.AppCore.WinRT.AppConfig.Lib.pchast': Permission denied -->
+  <!-- Call SetProjectReferenceProperties immediately after AssignProjectConfiguration to set the Project metadata early enough to avoid RuntimeIdentifier errors like in Bug1333386. -->
+  <Target Name="SetProjectReferenceProperties" AfterTargets="AssignProjectConfiguration" Returns="@(ProjectReferenceWithExtraMetadata)">
+    <ItemGroup>
+      <!-- There is no guarantee that _MSBuidlProjectReferenceExistent is set at this point.  Instead, use ProjectReferenceWithConfiguration -->
+      <_ProjectReferenceClosure Include="@(ProjectReferenceWithConfiguration->'%(Identity)')">
+        <DependencyKind>Direct</DependencyKind>
+      </_ProjectReferenceClosure>
+    </ItemGroup>
+    <ItemGroup>
+      <_WapReferenceProps Include="%(ProjectReferenceWithConfiguration.SetConfiguration)" />
+      <_WapReferenceProps Include="%(ProjectReferenceWithConfiguration.SetPlatform)" />
+    </ItemGroup>
+    <!-- Projects can specify additional projects -->
+    <MSBuild Targets="GetDeployableContentReferenceOutputs" Projects="@(ProjectReferenceWithConfiguration)" Properties="@(_WapReferenceProps)" SkipNonexistentTargets="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_DeployableContentProjectReferences" />
+    </MSBuild>
+    <ItemGroup>
+      <_ProjectReferenceClosure Include="@(_DeployableContentProjectReferences->'%(Identity)')" Condition="Exists('%(Identity)')">
+        <DependencyKind>Direct</DependencyKind>
+        <DeployableContentReference>True</DeployableContentReference>
+      </_ProjectReferenceClosure>
+    </ItemGroup>
+    <AddProjectMetadata Projects="@(_ProjectReferenceClosure)" SolutionDir="$(SolutionDir)" ParentConfiguration="$(Configuration)" ParentPlatform="$(Platform)" VsTelemetrySession="$(VsTelemetrySession)" OriginalTargetDir="$(OriginalTargetDir)" RequestingProject="$(RequestingProject)">
+      <Output TaskParameter="ProjectReferenceWithExtraMetadata" ItemName="ProjectReferenceWithExtraMetadata" />
+    </AddProjectMetadata>
+    <!-- Below task is adding new global properties that cause build issues. -->
+    <!--<SetPublishProperties
+      Projects="@(ProjectReferenceWithExtraMetadata)"
+      BuildingInsideVisualStudio="$(_IsBuildingInsideVisualStudio)"
+      IsGeneratingAppxPackage="$(_IsGeneratingAppxPackage)">
+      <Output TaskParameter="ProjectReferenceWithPublishProps" ItemName="ProjectReferenceWithPublishProps"/>
+    </SetPublishProperties>-->
+    <ItemGroup>
+      <ProjectReferenceWithPublishProps Include="@(ProjectReferenceWithExtraMetadata)" />
+    </ItemGroup>
+    <!-- We need to replace these items as we have now potentially altered output paths with the publish properties and RAR will fail to find dependencies -->
+    <ItemGroup>
+      <_MSBuildProjectReferenceExistent Remove="@(_MSBuildProjectReferenceExistent)" />
+      <_MSBuildProjectReferenceExistent Include="@(ProjectReferenceWithPublishProps)" />
+    </ItemGroup>
+    <!-- Desktop WinUI Apps build using UAP but don't set WindowsAppContainer to true, so treat them like Windows .-->
+    <ItemGroup>
+      <ProjectReferenceWithExtraMetadata Update="@(ProjectReferenceWithExtraMetadata)" Condition="'%(TargetPlatformIdentifier)'=='UAP' AND ('%(OutputType)'=='Exe' OR '%(OutputType)'=='WinExe') AND '%(WindowsAppContainer)'!='true'">
+        <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+      </ProjectReferenceWithExtraMetadata>
+    </ItemGroup>
+  </Target>
+  <!-- Ensure our ProjectReferences are built with our needed properties as we turned off BuildProjectReferences -->
+  <Target Name="_BuildDependentProjects" Condition="'$(WapAlwaysBuildDependentProjects)' == 'true'&#xD;&#xA;                  or '$(BuildingInsideVisualStudio)' != 'true'&#xD;&#xA;                  or '$(_IsGeneratingAppxPackage)' == 'true'" DependsOnTargets="_WapProjGetProjectClosure;_BuildSolutionDependencyProjects" Inputs="@(_NonWapProjProjectReference)" Outputs="fake" Returns="@(ProjectReferenceWithPublishProps)">
+    <MSBuild Projects="@(ProjectReferenceWithPublishProps)" Condition="'%(ProjectReferenceWithPublishProps.TargetFrameworkIdentifier)' != '.NETCoreApp'" Targets="$(_TargetsToBuild)" SkipNonexistentTargets="true" Properties="%(ProjectReferenceWithPublishProps.SetConfiguration);%(ProjectReferenceWithPublishProps.SetPlatform)" />
+    <MSBuild Projects="@(ProjectReferenceWithPublishProps)" Condition="'%(ProjectReferenceWithPublishProps.TargetFrameworkIdentifier)' == '.NETCoreApp'" Targets="publish" SkipNonexistentTargets="true" Properties="%(ProjectReferenceWithPublishProps.SetConfiguration);%(ProjectReferenceWithPublishProps.SetPlatform)" />
+  </Target>
+  <!-- This target removes projects from _MSBuildProjectReferenceExistent which breaks all kinds of things. -->
+  <Target Name="CheckForUWPReference" />
+  <!-- Need to make sure we always reference the VCLibs for Desktop-->
+  <Target Name="_ResolveVCLibDependencies" DependsOnTargets="_WapProjGetProjectClosure">
+    <PropertyGroup>
+      <_PlatformTargetForVCLibs Condition="'$(PlatformTarget)'!='AnyCPU'">$(PlatformTarget)</_PlatformTargetForVCLibs>
+      <_PlatformTargetForVCLibs Condition="'$(PlatformTarget)'=='AnyCPU'">x86</_PlatformTargetForVCLibs>
+    </PropertyGroup>
+    <GetInstalledSDKLocations SDKDirectoryRoots="$(SDKReferenceDirectoryRoot)" SDKExtensionDirectoryRoots="$(SDKExtensionDirectoryRoot)" SDKRegistryRoot="$(SDKReferenceRegistryRoot)" TargetPlatformVersion="$(TargetPlatformVersion)" TargetPlatformIdentifier="$(TargetPlatformIdentifier)" Condition="'@(InstalledSDKLocations)' == ''">
+      <Output TaskParameter="InstalledSDKs" ItemName="InstalledSDKLocations" />
+    </GetInstalledSDKLocations>
+    <ResolveSDKReference SDKReferences="Microsoft.VCLibs.Desktop, Version=$(_VCLibCurrentVersion)" TargetPlatformVersion="$(TargetPlatformVersion)" TargetPlatformIdentifier="$(TargetPlatformIdentifier)" TargetedSDKConfiguration="$(TargetedSDKConfiguration)" TargetedSDKArchitecture="$(PlatformTarget)" ProjectName="$(ProjectName)" InstalledSDKs="@(InstalledSDKLocations)">
+      <Output TaskParameter="ResolvedSDKReferences" ItemName="ResolvedVCLibsDependenciesSDKs" />
+    </ResolveSDKReference>
+    <GetFrameworkSdkPackages FrameworkSdkReferences="@(ResolvedVCLibsDependenciesSDKs)" TargetPlatformIdentifier="$(TargetPlatformIdentifier)">
+      <Output TaskParameter="FrameworkSdkPackages" ItemName="FrameworkPackageDependencies" />
+    </GetFrameworkSdkPackages>
+    <ItemGroup>
+      <FrameworkSdkPackage Include="@(FrameworkPackageDependencies)" Condition="'%(Architecture)' == '$(_PlatformTargetForVCLibs)'" />
+    </ItemGroup>
+  </Target>
+  <!-- End Overrides -->
+</Project>

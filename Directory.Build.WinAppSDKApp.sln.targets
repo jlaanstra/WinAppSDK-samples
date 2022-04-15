@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Customization for projects when referenced by the WinAppSDKApp.sln -->
+
+    <!-- With PackageReference support, winmds from native projects flow transitively.
+         However the .NET SDK doesn't like this.
+         Detecting presence of .NET SDK using UsingNETSdkDefaults -->
+    <Target Name="CsWinRTRemoveWinMDReferences"
+            BeforeTargets="BeforeCompile"
+            AfterTargets="ResolveReferences"
+            Condition="'$(UsingNETSdkDefaults)' == 'true'">
+        <ItemGroup>
+            <!--Move winmd references into private item group to prevent subsequent winmd reference errors-->
+            <CsWinRTRemovedReferences Include="@(ReferencePath)" Condition="'%(ReferencePath.Extension)' == '.winmd'" />
+            <CsWinRTInputs Include="@(CsWinRTRemovedReferences)"/>
+
+            <!--Prevent NETSDK1130 errors from winmd references-->
+            <ReferencePath Remove="@(ReferencePath)" Condition="'%(ReferencePath.Extension)' == '.winmd'" />
+            <ReferencePathWithRefAssemblies Remove="@(CsWinRTRemovedReferences)"
+              Condition="'%(CsWinRTRemovedReferences.Filename)%(CsWinRTRemovedReferences.Extension)' == '%(ReferencePathWithRefAssemblies.Filename)%(ReferencePathWithRefAssemblies.Extension)'" />
+            <!--Do not publish projection source winmds -->
+            <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="%(ReferenceCopyLocalPaths.Extension) == '.winmd'" />
+            <!-- Remove WinMDs from RuntimeCopyLocalPaths -->
+            <RuntimeCopyLocalItems Remove="@(RuntimeCopyLocalItems)" Condition="%(RuntimeCopyLocalItems.Extension) == '.winmd'"/>
+            <!--Remove winmd references from deps.json to prevent CLR failing unit test execution-->
+            <ReferenceDependencyPaths Remove="@(ReferenceDependencyPaths)" Condition="%(ReferenceDependencyPaths.Extension) == '.winmd'"/>
+        </ItemGroup>
+    </Target>
+
+    <!-- Some NuGet packages includes pdbs in the runtimes folder.
+         NuGet doesn't handle this correctly.
+         Use _PublishConflictPackageFiles, an input to the publish deps
+         file generation target, to exclude the native pdbs. -->
+    <Target Name="RemovePDBFromNativeCopyLocalItems"
+            BeforeTargets="GeneratePublishDependencyFile">
+        <ItemGroup>
+            <_PublishConflictPackageFiles Include="@(NativeCopyLocalItems)" Condition="'%(NativeCopyLocalItems.Extension)' == '.pdb'" />
+        </ItemGroup>
+    </Target>    
+
+    <!-- Import SelfContained Overrides-->
+    <Import Project="$(MSBuildThisFileDirectory)../Build/Targets/SelfContainedOverrides.targets" Condition="'$(MicrosoftWindowsAppSDKPackageDir)' != '' and '$(WindowsAppSDKSelfContained)' == 'true'" />
+
+    <!-- Import CsWinRT Authoring overrides -->
+    <Import Project="$(MSBuildThisFileDirectory)../Build/Targets/AuthoringOverrides.targets" Condition="'$(CsWinRTComponent)' == 'true'"/>
+</Project>

@@ -1,0 +1,29 @@
+<!--
+  Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+        <IncludeGetResolvedSDKReferences>true</IncludeGetResolvedSDKReferences>
+    </PropertyGroup>
+
+    <Target Name="GetNewAppManifestValues"
+        DependsOnTargets="ResolveReferences">
+        <PropertyGroup>
+            <OldApplicationManifest Condition="Exists('$(ApplicationManifest)')">$(ApplicationManifest)</OldApplicationManifest>
+            <NewApplicationManifest>$(SelfContainedIntermediateOutputPath)Manifests\mergeapp.manifest</NewApplicationManifest>
+            <ApplicationManifest>$(SelfContainedIntermediateOutputPath)Manifests\app.manifest</ApplicationManifest>
+        </PropertyGroup>
+        <ItemGroup>
+            <Manifest Include="$(ApplicationManifest)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_RemoveFrameworkReferences"
+        BeforeTargets="_ConvertItems;_CalculateInputsForGenerateCurrentProjectAppxManifest">
+        <ItemGroup>
+            <FrameworkSdkReference Remove="@(FrameworkSdkReference)" Condition="'%(FrameworkSdkReference.SDKName)' == 'Microsoft.WindowsAppRuntime.1.1-preview1'" />
+        </ItemGroup>
+    </Target>
+
+</Project>

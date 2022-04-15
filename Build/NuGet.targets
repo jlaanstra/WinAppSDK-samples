@@ -1,0 +1,44 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Enable PackageReference support for all projects -->
+    <ItemGroup>
+        <ProjectCapability Include="PackageReferences" />
+    </ItemGroup>
+    
+    <!-- NuGet PackageReference properties -->
+    <PropertyGroup>
+        <!-- Support packages through PackageReference items -->
+        <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+
+        <!-- Set up the NuGet assets file -->
+        <ProjectAssetsFile Condition="'$(ProjectAssetsFile)' == ''">$(MSBuildProjectExtensionsPath)/project.assets.json</ProjectAssetsFile>
+        <ProjectAssetsFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(ProjectAssetsFile)))</ProjectAssetsFile>
+
+        <ResolveNuGetPackages>false</ResolveNuGetPackages>
+    
+        <UseTargetPlatformAsNuGetTargetMoniker>false</UseTargetPlatformAsNuGetTargetMoniker>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
+        <TargetFramework>native</TargetFramework>
+        <TargetFrameworkIdentifier>native</TargetFrameworkIdentifier>
+        <TargetFrameworkVersion>v0.0</TargetFrameworkVersion>
+        <TargetFrameworkMoniker>native,Version=v0.0</TargetFrameworkMoniker>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Exclude NuGet packages from code analysis -->
+        <CAExcludePath>$(NuGetPackageFolders);$(CAExcludePath)</CAExcludePath>
+    </PropertyGroup>
+
+    <!-- Import the Microsoft.NET.Sdk and load the shim project, Sdk.NuGet.targets, that points to the .NET Sdk targets needed to populate the dependency tree. -->
+    <PropertyGroup>
+        <MicrosoftDotNetNuGetTargets  Condition="'$(MicrosoftDotNetNuGetTargets)' == ''">Sdk.NuGet.targets</MicrosoftDotNetNuGetTargets>
+    </PropertyGroup>
+
+    <!-- Required to be defined. -->
+    <Target Name="_HandlePackageFileConflicts" />
+
+    <Import Sdk="Microsoft.NET.Sdk" Project="$(MicrosoftDotNetNuGetTargets)" />
+
+</Project>
