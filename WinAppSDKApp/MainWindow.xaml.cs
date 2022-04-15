@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,6 +27,8 @@ namespace WinAppSDKApp
         public MainWindow()
         {
             this.InitializeComponent();
+
+            WindowHelper.TrackWindow(this);
         }
     }
 }
