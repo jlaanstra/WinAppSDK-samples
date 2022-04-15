@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 #else
+using Windows.Graphics.Display;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 #endif
@@ -20,7 +21,13 @@ namespace Shared
 
         private void myButton_Click(object sender, RoutedEventArgs e)
         {
-            myButton.Content = "Clicked";
+#if WINUI3
+            var displayInfo = DisplayInfo.GetDisplayInfoForElement(this);
+            myButton.Content = $"Screen: Width={displayInfo.ScreenWidth},Height={displayInfo.ScreenHeight}";
+#else
+            var displayInfo = DisplayInformation.GetForCurrentView();
+            myButton.Content = $"Screen: Width={displayInfo.ScreenWidthInRawPixels},Height={displayInfo.ScreenHeightInRawPixels}";
+#endif
         }
     }
 }
