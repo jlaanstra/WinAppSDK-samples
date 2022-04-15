@@ -1,0 +1,47 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+
+    <PropertyGroup Condition="'$(IsUsingWindowsAppSDK)' != 'true'">
+        <TargetFrameworks>uap10.0.22000</TargetFrameworks>
+        <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+
+        <LangVersion>9</LangVersion>
+        <ExtrasEnableDefaultPageItems>true</ExtrasEnableDefaultPageItems>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(IsUsingWindowsAppSDK)' == 'true'">
+        <TargetFrameworks>net6.0-windows10.0.22000.0</TargetFrameworks>
+        <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+        <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Platforms>x64;x86;ARM64</Platforms>
+        <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.22000.0</TargetPlatformVersion>
+        <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+        <AssetTargetFallback>native</AssetTargetFallback>
+
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Remove="SharedUserControl.xaml" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="**\*.Properties.cs" SubType="Code" DependentUpon="$([MSBuild]::ValueOrDefault('%(Filename)', '').Replace('.Properties', '.cs'))" />
+        <Compile Update="**\*.Properties.xaml.cs" SubType="Code" DependentUpon="$([MSBuild]::ValueOrDefault('%(Filename)', '').Replace('.Properties.xaml', '.xaml'))" />
+    </ItemGroup>
+
+
+    <ItemGroup Condition="'$(IsUsingWindowsAppSDK)' == 'true'">
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.0-preview1" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Page Update="SharedUserControl.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+    </ItemGroup>
+
+</Project>
