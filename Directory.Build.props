@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project TreatAsLocalProperty="OutDir;IntDir" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- This file is automatically imported by MSBuild for each project in under this folder, 
+         see https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build -->
+
+    <Import Condition="'$(SolutionName)' != '' and Exists('$(MSBuildThisFileDirectory)Directory.Build.$(SolutionName).sln.props')" Project="$(MSBuildThisFileDirectory)Directory.Build.$(SolutionName).sln.props" />
+
+    <Import Condition="Exists($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildThisFileDirectory)../', 'Directory.Build.props')))" Project="$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildThisFileDirectory)../', 'Directory.Build.props'))" />
+
+    <PropertyGroup>
+        <!-- Consistent output directory for AppContainer and non-AppContainer projects -->
+        <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
+        <PlatformDirectoryName Condition="'$(Platform)' == 'Win32'">x86</PlatformDirectoryName>
+        <PlatformDirectoryName Condition="'$(Platform)' != 'Win32'">$(Platform)</PlatformDirectoryName>
+
+        <!-- Set default for SolutionDir -->
+        <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)</SolutionDir>
+        <!-- Ensure any SolutionDir has a trailing slash, so it can be concatenated -->
+        <SolutionDir Condition="'$(SolutionDir)' != '' and !HasTrailingSlash('$(SolutionDir)')">$(SolutionDir)\</SolutionDir>
+
+        <BasePathProjectName>$(MSBuildProjectName)</BasePathProjectName>
+        <!-- Check azure devops environment variable -->
+        <OutputPathRoot Condition="'$(BUILD_BINARIESDIRECTORY)' != ''">$(BUILD_BINARIESDIRECTORY)\</OutputPathRoot>
+        <OutputPathRoot Condition="'$(OutputPathRoot)' == ''">$(SolutionDir)bin\</OutputPathRoot>
+        <BaseOutputPath>$(OutputPathRoot)$(BasePathProjectName)\</BaseOutputPath>
+        <OutputPath>$(OutputPathRoot)$(Configuration)\$(PlatformDirectoryName)\$(BasePathProjectName)\</OutputPath>
+        <!-- Check azure devops environment variable -->
+        <IntermediateOutputPathRoot Condition="'$(AGENT_BUILDDIRECTORY)' != ''">$(AGENT_BUILDDIRECTORY)\i\</IntermediateOutputPathRoot>
+        <IntermediateOutputPathRoot Condition="'$(IntermediateOutputPathRoot)' == ''" >$(SolutionDir)obj\</IntermediateOutputPathRoot>
+        <BaseIntermediateOutputPath>$(IntermediateOutputPathRoot)$(BasePathProjectName)\</BaseIntermediateOutputPath>
+        <IntermediateOutputPath>$(IntermediateOutputPathRoot)$(Configuration)\$(PlatformDirectoryName)\$(BasePathProjectName)\</IntermediateOutputPath>
+        <!-- MSBuild project extensions are not specific to configuration or platform. -->
+        <MSBuildProjectExtensionsPath>$(IntermediateOutputPathRoot)$(BasePathProjectName)\</MSBuildProjectExtensionsPath>
+
+        <!-- Opt-in to MSBuildCopyContentTransitively -->
+        <MSBuildCopyContentTransitively>true</MSBuildCopyContentTransitively>
+
+        <!-- Turn off overriding MinVersion/MaxVersionTested in the manifest as we want to control those by hand -->
+        <AppxOSMinVersionReplaceManifestVersion>false</AppxOSMinVersionReplaceManifestVersion>
+        <AppxOSMaxVersionTestedReplaceManifestVersion>false</AppxOSMaxVersionTestedReplaceManifestVersion>
+
+        <!-- Warnings as errors for C# -->
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <!-- Enable code analysis -->
+        <CodeAnalysisTreatWarningsAsErrors Condition="'$(CodeAnalysisTreatWarningsAsErrors)'==''">true</CodeAnalysisTreatWarningsAsErrors>
+    </PropertyGroup>
+
+</Project>

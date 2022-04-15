@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Customization for projects when referenced by the UWPApp.sln -->
+
+    <PropertyGroup>
+        <!-- We are not shipping libraries from this project, so disable GenerateLibraryLayout -->
+        <GenerateLibraryLayout>false</GenerateLibraryLayout>
+    </PropertyGroup>
+
+</Project>

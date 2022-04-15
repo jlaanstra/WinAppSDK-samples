@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Override the GetTargetPath target to fix https://github.com/microsoft/CsWinRT/issues/1144 -->
+    <!-- Update the project to only output the assembly's .winmd -->
+    <Target Name="GetTargetPath" DependsOnTargets="CsWinRTAuthoring_OutputManagedDll" Returns="@(TargetPathWithTargetPlatformMoniker)">
+        <ItemGroup>
+            <CsWinRTComponent_ManagedImplementation Include="@(TargetPathWithTargetPlatformMoniker)" Condition="'%(TargetPathWithTargetPlatformMoniker.TargetPath)' == '$(TargetPath)'">
+                <TargetPath>%(FullPath)</TargetPath>
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            </CsWinRTComponent_ManagedImplementation>
+        </ItemGroup>
+
+        <ItemGroup>
+            <!-- Clear the .dll -->
+            <TargetPathWithTargetPlatformMoniker Remove="@(CsWinRTComponent_ManagedImplementation)" />
+            <!-- Add the .winmd -->
+            <TargetPathWithTargetPlatformMoniker Include="$(TargetDir)$(AssemblyName).winmd">
+                <!-- implementation is NOT $(AssemblyName).dll -->
+                <Implementation>WinRT.Host.dll</Implementation>
+                <!-- show to c++ compiler (native case) and dotnet sdk (managed case) -->
+                <ResolveableAssembly>true</ResolveableAssembly>
+                <!-- Used by the dotnet sdk -->
+                <ManagedImplementation>%(CsWinRTComponent_ManagedImplementation.TargetPath)</ManagedImplementation>
+                <FileType>winmd</FileType>
+                <WinMDFile>true</WinMDFile>
+                <BuildReference>true</BuildReference>
+                <Primary>true</Primary>
+            </TargetPathWithTargetPlatformMoniker>
+
+        </ItemGroup>
+
+    </Target>
+</Project>
