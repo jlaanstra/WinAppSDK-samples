@@ -1,0 +1,8 @@
+namespace SharedNative
+{
+    [default_interface]
+    static runtimeclass ToastHelper
+    {
+        static void ShowToast();
+    }
+}

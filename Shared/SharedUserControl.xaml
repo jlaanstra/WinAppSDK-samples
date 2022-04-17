@@ -13,5 +13,6 @@
         VerticalAlignment="Center"
         Orientation="Horizontal">
         <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
+        <Button Click="RunTask_Click">Run Task</Button>
     </StackPanel>
 </UserControl>
