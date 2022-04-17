@@ -15,6 +15,8 @@ namespace WinAppSDKApp
     {
         private static App app;
 
+        // NOTE: can't be async or the STAThread attribute won't be applied.
+        // See https://github.com/dotnet/csharplang/issues/97
         [STAThread]
         public static void Main(string[] args)
         {
