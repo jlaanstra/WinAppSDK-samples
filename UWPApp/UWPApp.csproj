@@ -159,6 +159,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SharedNative\SharedNative.vcxproj">
+      <Project>{992deb16-dd26-496f-9350-4753dfde9e86}</Project>
+      <Name>SharedNative</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Shared\Shared.csproj">
       <Project>{07a1d20c-074c-4f74-8c90-2032f5ffaff5}</Project>
       <Name>Shared</Name>

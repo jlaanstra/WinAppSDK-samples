@@ -1,10 +1,14 @@
-﻿using System;
+﻿using Shared;
+using SharedNative;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Background;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -22,6 +26,8 @@ namespace UWPApp
     /// </summary>
     sealed partial class App : Application
     {
+        private const string ExampleTaskName = "ToastBgTask";
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -70,7 +76,54 @@ namespace UWPApp
                 }
                 // Ensure the current window is active
                 Window.Current.Activate();
+
+                RegisterTasks();
             }
+        }
+
+        protected override async void OnBackgroundActivated(BackgroundActivatedEventArgs args)
+        {
+            BackgroundTaskDeferral deferral = null;
+            try
+            {
+                var taskInstance = args.TaskInstance;
+                deferral = taskInstance.GetDeferral();
+
+                await OnBackgroundActivatedAsync(taskInstance);
+            }
+            finally
+            {
+                if (deferral != null)
+                {
+                    deferral.Complete();
+                }
+            }
+        }
+
+        private async Task OnBackgroundActivatedAsync(IBackgroundTaskInstance instance)
+        {
+            await TaskEx.YieldToBackground();
+
+            ToastHelper.ShowToast();
+        }
+
+        private void RegisterTasks()
+        {
+            foreach (var task in BackgroundTaskRegistration.AllTasks)
+            {
+                if (task.Value.Name == ExampleTaskName)
+                {
+                    return;
+                }
+            }
+
+
+            var builder = new BackgroundTaskBuilder
+            {
+                Name = ExampleTaskName
+            };
+            builder.SetTrigger(new ApplicationTrigger());
+            builder.Register();
         }
 
         /// <summary>
