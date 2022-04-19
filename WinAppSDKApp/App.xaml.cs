@@ -1,7 +1,16 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
+using Shared;
+using Shared.Utilities;
+using SharedNative;
+using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
+using WinAppSDKApp.Utilities;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Background;
+using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -13,7 +22,13 @@ namespace WinAppSDKApp
     /// </summary>
     public partial class App : Application
     {
+        private const string ExampleTaskName = "ToastBgTask";
+        private const string ExampleTaskEntryPoint = "BackgroundTasks.BackgroundTask";
+
         private readonly SynchronizationContext syncContext;
+
+        private Window m_window;
+        private ClassFactory<InProcBackgroundTask> inProcBackgroundTaskFactory;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -57,9 +72,55 @@ namespace WinAppSDKApp
             {
                 m_window = new MainWindow();
                 m_window.Activate();
+
+                RegisterComServer();
+                RegisterTasks();
             }
         }
 
-        private Window m_window;
+        public async Task OnBackgroundActivatedAsync(IBackgroundTaskInstance instance)
+        {
+            await TaskEx.YieldToBackground();
+
+            ToastHelper.ShowToast();
+        }
+
+        private void RegisterComServer()
+        {
+            this.inProcBackgroundTaskFactory = new ClassFactory<InProcBackgroundTask>(
+                () => new InProcBackgroundTask(),
+                new Dictionary<Guid, Func<object, IntPtr>>()
+                {
+                    { typeof(IBackgroundTask).GUID, obj => MarshalInterface<IBackgroundTask>.FromManaged((IBackgroundTask)obj) },
+                });
+            // On launch register the BackgroundTask class for OOP COM activation
+            ComUtilities.RegisterClass<InProcBackgroundTask>(this.inProcBackgroundTaskFactory);
+        }
+
+        private void RegisterTasks()
+        {
+            foreach (var task in BackgroundTaskRegistration.AllTasks)
+            {
+                if (task.Value.Name == ExampleTaskName)
+                {
+                    task.Value.Unregister(true);
+                }
+            }
+
+
+            var builder = new BackgroundTaskBuilder
+            {
+                Name = ExampleTaskName,
+                // Set either the TaskEntryPointClsId for Win32 bg tasks (limited triggers supported)
+                // or use the Out-OfProc workaround for others.
+                TaskEntryPoint = ExampleTaskEntryPoint,
+            };
+            // Uncomment this for Win32 bg tasks where the system directly activates the COM server,
+            // and update the manifest.
+            // See https://docs.microsoft.com/en-us/windows/uwp/launch-resume/create-and-register-a-winmain-background-task
+            // builder.SetTaskEntryPointClsid(typeof(InProcBackgroundTask).GUID);
+            builder.SetTrigger(new TimeTrigger(15, true));
+            builder.Register();
+        }
     }
 }

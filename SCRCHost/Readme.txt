@@ -1,0 +1,1 @@
+﻿Special .NET host for CsWinRT self-contained runtime components using DNNE.

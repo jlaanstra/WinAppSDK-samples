@@ -1,9 +1,10 @@
-﻿#if WINUI3
+﻿using System;
+using Windows.ApplicationModel.Background;
+using System.Diagnostics;
+#if WINUI3
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 #else
-using System;
-using Windows.ApplicationModel.Background;
 using Windows.Graphics.Display;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -30,12 +31,6 @@ namespace Shared
             var displayInfo = DisplayInformation.GetForCurrentView();
             myButton.Content = $"Screen: Width={displayInfo.ScreenWidthInRawPixels},Height={displayInfo.ScreenHeightInRawPixels}";
 #endif
-        }
-
-        private async void RunTask_Click(object sender, RoutedEventArgs e)
-        {
-            ApplicationTrigger trigger = new ApplicationTrigger();
-            await trigger.RequestAsync();
         }
     }
 }

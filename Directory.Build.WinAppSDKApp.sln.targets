@@ -40,8 +40,8 @@
     </Target>    
 
     <!-- Import SelfContained Overrides-->
-    <Import Project="$(MSBuildThisFileDirectory)../Build/Targets/SelfContainedOverrides.targets" Condition="'$(MicrosoftWindowsAppSDKPackageDir)' != '' and '$(WindowsAppSDKSelfContained)' == 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)Build/SelfContainedOverrides.targets" Condition="'$(MicrosoftWindowsAppSDKPackageDir)' != '' and '$(WindowsAppSDKSelfContained)' == 'true'" />
 
     <!-- Import CsWinRT Authoring overrides -->
-    <Import Project="$(MSBuildThisFileDirectory)../Build/Targets/AuthoringOverrides.targets" Condition="'$(CsWinRTComponent)' == 'true'"/>
+    <Import Project="$(MSBuildThisFileDirectory)Build/AuthoringOverrides.targets" Condition="'$(CsWinRTComponent)' == 'true'"/>
 </Project>

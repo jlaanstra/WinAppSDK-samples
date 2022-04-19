@@ -3,3 +3,5 @@ MONITORINFO
 MonitorFromWindow
 GetMonitorInfo
 GetDpiForMonitor
+CoRegisterClassObject
+REGCLS
