@@ -11,7 +11,7 @@
         <PublishReadyToRunEmitSymbols>true</PublishReadyToRunEmitSymbols>
     </PropertyGroup>
 
-    <ItemDefinitionGroup Condition="'$(MSBuildProjectExtension)' != '.csproj'">
+    <ItemDefinitionGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
         <ClCompile>
             <PreprocessorDefinitions>%(PreprocessorDefinitions);WINUI3</PreprocessorDefinitions>
         </ClCompile>

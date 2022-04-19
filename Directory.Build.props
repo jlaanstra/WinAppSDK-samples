@@ -44,6 +44,34 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <!-- Enable code analysis -->
         <CodeAnalysisTreatWarningsAsErrors Condition="'$(CodeAnalysisTreatWarningsAsErrors)'==''">true</CodeAnalysisTreatWarningsAsErrors>
+        <!-- Exclude C++ NuGet packages from code analysis -->
+        <CAExcludePath>$(SolutionDir)packages;$(CAExcludePath)</CAExcludePath>
+    </PropertyGroup>
+
+    <!-- C++ build targets insist that OutDir matches OutputPath so do that here. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
+        <!-- Prevent the C++ build targets from destroying the above output paths -->
+        <OutDirWasSpecified>true</OutDirWasSpecified>
+        <OutDir>$(OutputPath)</OutDir>
+        <IntDir>$(IntermediateOutputPath)</IntDir>
+
+        <!-- C++ specific property -->
+        <GeneratedFilesDir>$(IntermediateOutputPath)Generated Files\</GeneratedFilesDir>
+        
+        <!-- We want C++20 coroutines. -->
+        <CppWinRTEnableLegacyCoroutines>false</CppWinRTEnableLegacyCoroutines>
+
+        <!-- Experimental flag to limit cl.exe parallelism with multiple MSBuild instances -->
+        <!-- https://devblogs.microsoft.com/cppblog/improved-parallelism-in-msbuild/ -->
+        <UseMultiToolTask>true</UseMultiToolTask>
+        <EnforceProcessCountAcrossBuilds>true</EnforceProcessCountAcrossBuilds>
+        <MultiProcMIDL>true</MultiProcMIDL>
+
+        <!-- C++ doesn't respect the normal ways of common props/target files using Directory.Build.props
+             Include custom stuff for C++ because it's a special snowflake.
+             https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build?view=vs-2022#customize-c-builds -->
+        <ForceImportAfterCppDefaultProps>$(MSBuildThisFileDirectory)CppDefaultProps.props</ForceImportAfterCppDefaultProps>
+        <ForceImportAfterCppTargets>$(MSBuildThisFileDirectory)CppBuild.targets</ForceImportAfterCppTargets>
     </PropertyGroup>
 
 </Project>

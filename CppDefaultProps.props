@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+        <!-- Setting DesktopCompatible to false because ppl no longer
+             captures the context correctly, causing wrong-thread exceptions,
+             when DesktopCompatible=true.
+             Tracked by https://github.com/microsoft/STL/pull/2654 -->
+        <DesktopCompatible>false</DesktopCompatible>
+    </PropertyGroup>
+
+</Project>
