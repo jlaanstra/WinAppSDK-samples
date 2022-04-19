@@ -3,46 +3,81 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap rescap">
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  IgnorableNamespaces="uap rescap com">
 
-  <Identity
-    Name="WinAppSDKApp.Package"
-    Publisher="CN=jlaans"
-    Version="1.0.0.0" />
+    <Identity
+      Name="WinAppSDKApp.Package"
+      Publisher="CN=jlaans"
+      Version="1.0.0.0" />
 
-  <Properties>
-    <DisplayName>WinAppSDKApp.Package</DisplayName>
-    <PublisherDisplayName>jlaans</PublisherDisplayName>
-    <Logo>Images\StoreLogo.png</Logo>
-  </Properties>
+    <Properties>
+        <DisplayName>WinAppSDKApp.Package</DisplayName>
+        <PublisherDisplayName>jlaans</PublisherDisplayName>
+        <Logo>Images\StoreLogo.png</Logo>
+    </Properties>
 
-  <Dependencies>
-    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.18362.0" MaxVersionTested="10.0.22000.0" />
-  </Dependencies>
+    <Dependencies>
+        <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.18362.0" MaxVersionTested="10.0.22000.0" />
+    </Dependencies>
 
-  <Resources>
-    <!-- No x-generate for WinAppSDK, so list languages explicitly -->
-    <Resource Language="en-US"/>
-  </Resources>
+    <Resources>
+        <!-- No x-generate for WinAppSDK, so list languages explicitly -->
+        <Resource Language="en-US"/>
+    </Resources>
 
-  <Applications>
-    <Application Id="App"
-      Executable="$targetnametoken$.exe"
-      EntryPoint="$targetentrypoint$">
-      <uap:VisualElements
-        DisplayName="WinAppSDKApp.Package"
-        Description="WinAppSDKApp.Package"
-        BackgroundColor="transparent"
-        Square150x150Logo="Images\Square150x150Logo.png"
-        Square44x44Logo="Images\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
-        <uap:SplashScreen Image="Images\SplashScreen.png" />
-      </uap:VisualElements>
-    </Application>
-  </Applications>
+    <Applications>
+        <Application Id="App"
+          Executable="$targetnametoken$.exe"
+          EntryPoint="$targetentrypoint$">
+            <uap:VisualElements
+              DisplayName="WinAppSDKApp.Package"
+              Description="WinAppSDKApp.Package"
+              BackgroundColor="transparent"
+              Square150x150Logo="Images\Square150x150Logo.png"
+              Square44x44Logo="Images\Square44x44Logo.png">
+                <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
+                <uap:SplashScreen Image="Images\SplashScreen.png" />
+            </uap:VisualElements>
 
-  <Capabilities>
-    <rescap:Capability Name="runFullTrust" />
-  </Capabilities>
+            <Extensions>
+                <Extension Category="windows.backgroundTasks" EntryPoint="BackgroundTasks.BackgroundTask">
+                    <BackgroundTasks uap4:SupportsMultipleInstances="true">
+                        <Task Type="systemEvent"/>
+                        <Task Type="general"/>
+                    </BackgroundTasks>
+                </Extension>
+                <com:Extension Category="windows.comServer">
+                    <com:ComServer>
+                        <!-- NOTE: make sure to update your package SID here to explicitly allow activation from AppContainer context -->
+                        <!-- 0x11 = (COM_RIGHTS_EXECUTE | COM_RIGHTS_EXECUTE_LOCAL | COM_RIGHTS_ACTIVATE_LOCAL) -->
+                        <!-- O:PSG:BU   Owner: principal self, Group: Built-in users -->
+                        <!-- (A;;0x11;;;IU) Allow SDDL_INTERACTIVE -->
+                        <!-- (A;;11;;;S-1-15-3-2348949857-2020245415-1037339150-2736345358-663409332-3328911834-2849561672)S:(ML;;NX;;;LW) is this package (WinAppSDKApp.Package) SID -->
+                        <com:ExeServer 
+                            Executable="WinAppSDKApp\WinAppSDKApp.exe" 
+                            Arguments="-RegisterProcessAsComServer"
+                            LaunchAndActivationPermission="O:PSG:BUD:(A;;11;;;IU)(A;;11;;;S-1-15-3-2348949857-2020245415-1037339150-2736345358-663409332-3328911834-2849561672)S:(ML;;NX;;;LW)">
+                            <com:Class Id="148C5627-665B-4DAC-AB27-64397E80335A" />
+                        </com:ExeServer>
+                    </com:ComServer>
+                </com:Extension>
+            </Extensions>
+        </Application>
+    </Applications>
+
+    <Capabilities>
+        <rescap:Capability Name="runFullTrust" />
+    </Capabilities>
+
+    <Extensions>
+        <Extension Category="windows.activatableClass.inProcessServer">
+            <InProcessServer>
+                <Path>WinAppSDKApp\SCRCHostNE.dll</Path>
+                <ActivatableClass ActivatableClassId="BackgroundTasks.BackgroundTask" ThreadingModel="both" />
+            </InProcessServer>
+        </Extension>
+    </Extensions>
 </Package>

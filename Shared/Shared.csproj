@@ -23,6 +23,10 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(IsUsingWindowsAppSDK)' == 'true'">
+        <CsWinRTIncludes>SharedNative</CsWinRTIncludes>
+    </PropertyGroup>
+
     <ItemGroup Condition="'$(IsUsingWindowsAppSDK)' != 'true'">
       <Compile Remove="Windowing\**" />
       <Content Remove="Windowing\**" />
@@ -40,13 +44,16 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\SharedNative\SharedNative.vcxproj" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Compile Update="**\*.Properties.cs" SubType="Code" DependentUpon="$([MSBuild]::ValueOrDefault('%(Filename)', '').Replace('.Properties', '.cs'))" />
         <Compile Update="**\*.Properties.xaml.cs" SubType="Code" DependentUpon="$([MSBuild]::ValueOrDefault('%(Filename)', '').Replace('.Properties.xaml', '.xaml'))" />
     </ItemGroup>
 
-
     <ItemGroup Condition="'$(IsUsingWindowsAppSDK)' == 'true'">
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.0-preview1" />
+        <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.5.0" />
     </ItemGroup>
-
 </Project>

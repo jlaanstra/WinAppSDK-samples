@@ -70,8 +70,8 @@
         <!-- C++ doesn't respect the normal ways of common props/target files using Directory.Build.props
              Include custom stuff for C++ because it's a special snowflake.
              https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build?view=vs-2022#customize-c-builds -->
-        <ForceImportAfterCppDefaultProps>$(MSBuildThisFileDirectory)CppDefaultProps.props</ForceImportAfterCppDefaultProps>
-        <ForceImportAfterCppTargets>$(MSBuildThisFileDirectory)CppBuild.targets</ForceImportAfterCppTargets>
+        <ForceImportAfterCppDefaultProps>$(MSBuildThisFileDirectory)Build/CppDefaultProps.props</ForceImportAfterCppDefaultProps>
+        <ForceImportAfterCppTargets>$(MSBuildThisFileDirectory)Build/CppBuild.targets</ForceImportAfterCppTargets>
     </PropertyGroup>
 
 </Project>

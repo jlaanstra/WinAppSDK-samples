@@ -113,7 +113,7 @@ namespace UWPApp
             {
                 if (task.Value.Name == ExampleTaskName)
                 {
-                    return;
+                    task.Value.Unregister(true);
                 }
             }
 
@@ -122,7 +122,7 @@ namespace UWPApp
             {
                 Name = ExampleTaskName
             };
-            builder.SetTrigger(new ApplicationTrigger());
+            builder.SetTrigger(new TimeTrigger(15, true));
             builder.Register();
         }
 
