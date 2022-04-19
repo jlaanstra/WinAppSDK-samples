@@ -1,0 +1,43 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Fix C++ build targets to properly return @(TargetPathWithTargetPlatformMoniker)
+         similar to GetTargetPath-->
+    <Target
+        Name="Build"
+        Condition="'$(_InvalidConfigurationWarning)' != 'true'"
+        DependsOnTargets="$(BuildDependsOn)"
+        Returns="@(TargetPathWithTargetPlatformMoniker)">
+        <ItemGroup>
+            <TargetPathWithTargetPlatformMoniker Include="@(WinMDFullPath)" />
+            <TargetPathWithTargetPlatformMoniker Include="$(TargetPath)" Condition="'@(TargetPathWithTargetPlatformMoniker)' == ''">
+                <ResolveableAssembly Condition="'$(ConfigurationType)' != 'StaticLibrary'">$(ManagedAssembly)</ResolveableAssembly>
+                <ResolveableAssembly Condition="'$(ConfigurationType)' == 'StaticLibrary'">false</ResolveableAssembly>
+            </TargetPathWithTargetPlatformMoniker>
+
+            <TargetPathWithTargetPlatformMoniker>
+                <TargetPlatformMoniker>$(TargetPlatformMoniker)</TargetPlatformMoniker>
+                <TargetPlatformIdentifier>$(TargetPlatformIdentifier)</TargetPlatformIdentifier>
+            </TargetPathWithTargetPlatformMoniker>
+        </ItemGroup>
+    </Target>
+
+    <Target
+        Name="Rebuild"
+        Condition=" '$(_InvalidConfigurationWarning)' != 'true' "
+        DependsOnTargets="$(RebuildDependsOn)"
+        Returns="@(TargetPathWithTargetPlatformMoniker)">
+        <ItemGroup>
+            <TargetPathWithTargetPlatformMoniker Include="@(WinMDFullPath)" />
+            <TargetPathWithTargetPlatformMoniker Include="$(TargetPath)" Condition="'@(TargetPathWithTargetPlatformMoniker)' == ''">
+                <ResolveableAssembly Condition="'$(ConfigurationType)' != 'StaticLibrary'">$(ManagedAssembly)</ResolveableAssembly>
+                <ResolveableAssembly Condition="'$(ConfigurationType)' == 'StaticLibrary'">false</ResolveableAssembly>
+            </TargetPathWithTargetPlatformMoniker>
+
+            <TargetPathWithTargetPlatformMoniker>
+                <TargetPlatformMoniker>$(TargetPlatformMoniker)</TargetPlatformMoniker>
+                <TargetPlatformIdentifier>$(TargetPlatformIdentifier)</TargetPlatformIdentifier>
+            </TargetPathWithTargetPlatformMoniker>
+        </ItemGroup>
+    </Target>
+
+</Project>

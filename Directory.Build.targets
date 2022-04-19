@@ -8,6 +8,19 @@
 
     <Import Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../')))" Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
+    <ItemDefinitionGroup>
+        <!-- This is in the targets file to make sure we override the defaults set by the C++ props. -->
+        <ClCompile Condition="'$(MultiProcCL)' == 'true'">
+            <ForceSynchronousPDBWrites Condition="'%(ClCompile.DebugInformationFormat)' == 'EditAndContinue' or '%(ClCompile.DebugInformationFormat)' == 'ProgramDatabase'">true</ForceSynchronousPDBWrites>
+            <!-- disable /MP -->
+            <MultiProcessorCompilation />
+        </ClCompile>
+        <ClCompile>
+            <!-- Enable access to all win32 apis in windows headers. -->
+            <PreprocessorDefinitions>%(PreprocessorDefinitions);WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    
     <!-- Prevent projects from breaking incremental build by failing if any item has CopyToOutputDirectory=Always -->
     <PropertyGroup>
         <PrepareForRunDependsOn>
